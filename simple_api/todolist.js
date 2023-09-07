@@ -1,6 +1,7 @@
 class TodoList {
   todoList = ["Hello", "World"];
 
+  // Response JSON
   getJsonTodoList() {
     const json = JSON.stringify({
       code: 200,
@@ -21,7 +22,10 @@ class TodoList {
   }
 
   postTodoList(req, res) {
+    // Get the data sent using 
     req.addListener("data", (data) => {
+      // Parse the data into JSON because it comes as json string.
+      // Convert data to string because its buffer.
       const body = JSON.parse(data.toString())
       this.todoList.push(body.todo)
 
@@ -32,6 +36,8 @@ class TodoList {
 
   putTodoList(req, res) {
     req.addListener("data", (data) => {
+      // Parse the data into JSON because it comes as json string.
+      // Convert data to string because its buffer.
       const body = JSON.parse(data.toString())
       if (this.todoList[body.id]) {
         this.todoList[body.id] = body.todo;
@@ -44,6 +50,8 @@ class TodoList {
 
   deleteTodoList(req, res) {
     req.addListener("data", (data) => {
+      // Parse the data into JSON because it comes as json string.
+      // Convert data to string because its buffer.
       const body = JSON.parse(data.toString())
       if (this.todoList[body.id]) {
         this.todoList.splice(body.id, 1);
