@@ -1,0 +1,19 @@
+{
+  "name": "npm",
+  "version": "1.0.0",
+  "description": "",
+  "exports": {
+    ".": "./index.js",
+    "./lib": "./lib.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
