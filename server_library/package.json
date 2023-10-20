@@ -1,16 +1,15 @@
 {
-  "name": "npm",
+  "name": "azariaberyl-simple-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple server library",
   "exports": {
-    ".": "./index.js",
-    "./lib": "./lib.js"
+    ".": "./src/server.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node ./src/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Azaria Beryl",
   "license": "ISC",
   "type": "module",
   "devDependencies": {

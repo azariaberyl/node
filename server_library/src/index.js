@@ -1,10 +1,17 @@
-import htpp from "http";
+import Server from './server.js';
+import TodoList from './todolist.js';
 
-const server = htpp.createServer((req, res) => {
-  res.write("Hello World");
-  res.end();
+const service = new TodoList();
+service.getJsonTodos();
+
+const app = new Server({
+  port: 8000,
+  get: service.get,
+  post: service.post,
+  put: service.put,
+  del: service.del,
 });
 
-server.listen(3000, () => {
-  console.log("Server start in port 3000");
-});
+console.log(app);
+
+app.start();
