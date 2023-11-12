@@ -43,7 +43,7 @@ test('res set header', async () => {
   });
 
   let response = await request(app).get('/').query({ name: 'John' });
-  expect(response.token).toBe('Halo dek');
+  expect(response.get('token')).toBe('Halo dek');
 });
 
 // Request
