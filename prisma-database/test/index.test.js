@@ -96,7 +96,7 @@ test('Tag function', async () => {
   tagFunction`Hello ${name}, your id is ${id}`;
 });
 
-describe.only('Transaction', () => {
+describe('Transaction', () => {
   test('Sequential transaction', async () => {
     const insertedData = {
       email: 'jane@gmail.com',
@@ -144,5 +144,59 @@ describe.only('Transaction', () => {
 
     expect(result[0]).toEqual(insertedData);
     expect(result[1]).toEqual(insertedData);
+  });
+});
+
+describe.only('CRUD Many', () => {
+  const createdData1 = {
+    email: 'jane@gmail.com',
+    id: 'jane',
+    name: 'Jane',
+    phone: '7349801293',
+  };
+
+  const createdData2 = {
+    name: 'Jane1',
+    email: 'jane1@gmail.com',
+    id: 'Jane1',
+    phone: '049320948',
+  };
+
+  test('Create many', async () => {
+    const result = await prismaClient.customer.createMany({
+      data: [createdData1, createdData2],
+    });
+
+    console.log(result);
+
+    expect(result.count).toBe(2);
+  });
+
+  test('Update many', async () => {
+    const result = await prismaClient.customer.updateMany({
+      data: {
+        name: 'Jane Doe',
+      },
+      where: {
+        name: {
+          contains: 'Jane',
+        },
+      },
+    });
+
+    expect(result.count).toBe(2);
+  });
+
+  test('Read many', () => {});
+  test('Delete many', async () => {
+    const result = await prismaClient.customer.deleteMany({
+      where: {
+        name: {
+          contains: 'Jane',
+        },
+      },
+    });
+
+    expect(result.count).toBe(2);
   });
 });
