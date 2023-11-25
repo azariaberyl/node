@@ -23,3 +23,13 @@ model customer {
 
   @@map("customers")
 }
+
+model Product {
+  id       Int    @id @default(autoincrement())
+  name     String
+  price    Float
+  stock    Int
+  category String
+
+  @@map("products") // Optional: Use this if your table name differs from the model name
+}
