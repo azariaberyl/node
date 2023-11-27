@@ -4,8 +4,8 @@ import prismaClient from '../src/prisma-client.js';
 const data1 = {
   id: 'Johnwick',
   name: 'John',
-  email: 'john@gmail.com',
-  phone: '081234567890',
+  email: 'john0@gmail.com',
+  phone: '081234567891',
 };
 const data2 = {
   id: 'Johnwick1',
@@ -54,13 +54,14 @@ test('Query SQL', async () => {
   await prismaClient.$executeRaw`INSERT INTO sample (id, name) VALUES (${id}, ${name})`;
   const samples = await prismaClient.$queryRaw`SELECT * FROM sample WHERE id = ${id}`;
   console.log(samples);
+  await prismaClient.$executeRaw`DELETE FROM sample WHERE ${id}`;
 });
 
 describe('Prisma CRUD ORM operation', () => {
   test('Create operation', async () => {
     const customer = await prismaClient.customer.create({
       data: {
-        id: 'Johnwick',
+        id: 'Johnwic',
         name: 'John',
         email: 'john@gmail.com',
         phone: '081234567890',
@@ -68,7 +69,7 @@ describe('Prisma CRUD ORM operation', () => {
     });
 
     expect(customer.email).toBe('john@gmail.com');
-    expect(customer.id).toBe('Johnwick');
+    expect(customer.id).toBe('Johnwic');
     expect(customer.name).toBe('John');
     expect(customer.phone).toBe('081234567890');
   });
@@ -79,7 +80,7 @@ describe('Prisma CRUD ORM operation', () => {
         name: 'John Wick',
       },
       where: {
-        id: 'Johnwick',
+        id: 'Johnwic',
       },
     });
 
@@ -89,12 +90,12 @@ describe('Prisma CRUD ORM operation', () => {
   test('Read operation', async () => {
     const customer = await prismaClient.customer.findUnique({
       where: {
-        id: 'Johnwick',
+        id: 'Johnwic',
       },
     });
 
     expect(customer.email).toBe('john@gmail.com');
-    expect(customer.id).toBe('Johnwick');
+    expect(customer.id).toBe('Johnwic');
     expect(customer.name).toBe('John Wick');
     expect(customer.phone).toBe('081234567890');
   });
@@ -102,12 +103,12 @@ describe('Prisma CRUD ORM operation', () => {
   test('Delete operation', async () => {
     const customer = await prismaClient.customer.delete({
       where: {
-        id: 'Johnwick',
+        id: 'Johnwic',
       },
     });
 
     expect(customer.email).toBe('john@gmail.com');
-    expect(customer.id).toBe('Johnwick');
+    expect(customer.id).toBe('Johnwic');
     expect(customer.name).toBe('John Wick');
     expect(customer.phone).toBe('081234567890');
   });
@@ -399,6 +400,254 @@ test('Where, filter conditions and operators', async () => {
   });
 });
 
-test.todo('One to one');
-test.todo('One to many');
-test.todo('many to many');
+describe('One to one, customer to wallet', () => {
+  afterAll(async () => {
+    await prismaClient.wallet.delete({
+      where: {
+        id: 1,
+      },
+    });
+    await prismaClient.customer.delete({
+      where: {
+        id: 'john2',
+      },
+    });
+  });
+
+  test('One to one, connect, with include', async () => {
+    const result = await prismaClient.wallet.create({
+      data: {
+        id: 1,
+        balance: 100_000,
+        customer_id: data1.id,
+      },
+      include: {
+        customer: true,
+      },
+    });
+
+    expect(result).toEqual({ id: 1, balance: 100_000, customer_id: data1.id, customer: { ...data1 } });
+
+    await prismaClient.wallet.delete({
+      where: {
+        id: 1,
+      },
+    });
+  });
+
+  test('One to one, create with relation', async () => {
+    const result = await prismaClient.customer.create({
+      data: {
+        id: 'john2',
+        email: 'john2@gmail.com',
+        name: 'John Wick',
+        phone: '0858721392183',
+        wallet: {
+          create: {
+            id: 1,
+            balance: 10000,
+          },
+        },
+      },
+      include: {
+        wallet: true,
+      },
+    });
+
+    expect(result).toEqual({
+      id: 'john2',
+      email: 'john2@gmail.com',
+      name: 'John Wick',
+      phone: '0858721392183',
+      wallet: {
+        id: 1,
+        balance: 10_000,
+        customer_id: 'john2',
+      },
+    });
+  });
+
+  test('find many with include', async () => {
+    const result = await prismaClient.customer.findMany({
+      where: {
+        wallet: {
+          isNot: null,
+        },
+      },
+      include: {
+        wallet: true,
+      },
+    });
+    console.log(result);
+  });
+});
+
+describe('One to many, customer to comments', () => {
+  test('Create comment, connect with include', async () => {
+    const result = await prismaClient.comment.create({
+      data: {
+        id: '103',
+        description: 'New comment',
+        title: 'Comment',
+        customer_id: '1',
+      },
+      include: {
+        customer: true,
+      },
+    });
+
+    // console.log(result);
+    expect(result).toEqual({
+      id: '103',
+      description: 'New comment',
+      title: 'Comment',
+      customer_id: '1',
+      customer: {
+        id: '1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '123-456-7890',
+      },
+    });
+  });
+
+  test('Create customer with relations', async () => {
+    const result = await prismaClient.customer.create({
+      data: {
+        id: 'wick',
+        email: 'wick@gmail.com',
+        name: 'Mr Wick',
+        phone: '213-849-123',
+        comment: {
+          createMany: {
+            data: [
+              { id: 'w1', description: 'New comment', title: 'Comment' },
+              { id: 'w2', description: 'New comment 2', title: 'Comment 2' },
+            ],
+          },
+        },
+      },
+      include: {
+        comment: true,
+      },
+    });
+
+    // console.log(result);
+    expect(result).toEqual({
+      id: 'wick',
+      email: 'wick@gmail.com',
+      name: 'Mr Wick',
+      phone: '213-849-123',
+      comment: [
+        { id: 'w1', description: 'New comment', title: 'Comment', customer_id: 'wick' },
+        { id: 'w2', description: 'New comment 2', title: 'Comment 2', customer_id: 'wick' },
+      ],
+    });
+  });
+
+  test('Find many customers based on comments', async () => {
+    const result = await prismaClient.customer.findMany({
+      where: {
+        comment: {
+          some: {
+            title: {
+              contains: 'Comment',
+            },
+          },
+        },
+      },
+      include: {
+        comment: true,
+      },
+    });
+
+    expect(result[0]).toEqual({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      phone: '123-456-7890',
+      comment: [
+        {
+          id: '101',
+          customer_id: '1',
+          title: 'First Comment by John',
+          description: "This is the description of John's first comment.",
+        },
+        {
+          id: '102',
+          customer_id: '1',
+          title: 'Second Comment by John',
+          description: "This is the description of John's second comment.",
+        },
+        {
+          id: '103',
+          description: 'New comment',
+          title: 'Comment',
+          customer_id: '1',
+        },
+      ],
+    });
+    expect(result[1]).toEqual({
+      id: '2',
+      name: 'Jane Smith',
+      email: 'jane@example.com',
+      phone: '987-654-3210',
+      comment: [
+        {
+          id: '201',
+          customer_id: '2',
+          title: 'First Comment by Jane',
+          description: "This is the description of Jane's first comment.",
+        },
+        {
+          id: '202',
+          customer_id: '2',
+          title: 'Second Comment by Jane',
+          description: "This is the description of Jane's second comment.",
+        },
+      ],
+    });
+
+    expect(result[2]).toEqual({
+      id: 'wick',
+      name: 'Mr Wick',
+      email: 'wick@gmail.com',
+      phone: '213-849-123',
+      comment: [
+        {
+          id: 'w1',
+          customer_id: 'wick',
+          title: 'Comment',
+          description: 'New comment',
+        },
+        {
+          id: 'w2',
+          customer_id: 'wick',
+          title: 'Comment 2',
+          description: 'New comment 2',
+        },
+      ],
+    });
+  });
+
+  test('Delete comments and customers', async () => {
+    const result = await prismaClient.comment.deleteMany({
+      where: {
+        OR: [{ customer_id: 'wick' }, { id: '103' }],
+      },
+    });
+    const result2 = await prismaClient.customer.delete({
+      where: {
+        id: 'wick',
+      },
+    });
+  });
+});
+
+describe.only('Many to many, likes, cumstomer can like many product; can be liked by many', () => {
+  test.todo('create relation, customer likes product');
+  test.todo('find customer with include likes');
+  test.todo('find customers with include like');
+  test.todo('create implicit relation');
+  test.todo('find implicits relation');
+});
