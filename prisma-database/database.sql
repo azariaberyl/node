@@ -28,3 +28,11 @@ CREATE TABLE likes (
     CONSTRAINT likes_customer_id_fk FOREIGN KEY (customer_id) REFERENCES customers (id),
     CONSTRAINT likes_product_id_fk FOREIGN KEY (product_id) REFERENCES products (id)
 ) ENGINE innodb;
+
+CREATE TABLE _loves (
+    A varchar(191),
+    B int,
+    PRIMARY KEY (A, B),
+    CONSTRAINT customer_loves_fk FOREIGN KEY (A) REFERENCES customers (id),
+    CONSTRAINT product_loves_fk FOREIGN KEY (B) REFERENCES products (id)
+) ENGINE innodb;

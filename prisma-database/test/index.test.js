@@ -645,9 +645,140 @@ describe('One to many, customer to comments', () => {
 });
 
 describe.only('Many to many, likes, cumstomer can like many product; can be liked by many', () => {
-  test.todo('create relation, customer likes product');
-  test.todo('find customer with include likes');
-  test.todo('find customers with include like');
-  test.todo('create implicit relation');
+  test('create relation, customer likes product', async () => {
+    const result = await prismaClient.like.create({
+      data: {
+        customer_id: '1',
+        product_id: 1,
+      },
+      include: {
+        customer: true,
+        product: true,
+      },
+    });
+
+    expect(result).toEqual({
+      customer_id: '1',
+      product_id: 1,
+      customer: {
+        id: '1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '123-456-7890',
+      },
+      product: {
+        id: 1,
+        name: 'Product1',
+        price: 19.99,
+        stock: 50,
+        category: 'Electronics',
+      },
+    });
+  });
+  test('find customer with include likes', async () => {
+    const result = await prismaClient.customer.findUnique({
+      where: {
+        id: '1',
+      },
+      include: {
+        likes: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    expect(result).toEqual({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      phone: '123-456-7890',
+      likes: [
+        {
+          customer_id: '1',
+          product_id: 1,
+          product: {
+            category: 'Electronics',
+            id: 1,
+            name: 'Product1',
+            price: 19.99,
+            stock: 50,
+          },
+        },
+      ],
+    });
+  });
+  test('find customers with include like', async () => {
+    const result = await prismaClient.customer.findMany({
+      where: {
+        likes: {
+          some: {
+            product: {
+              name: {
+                contains: 'Product',
+              },
+            },
+          },
+        },
+      },
+      include: {
+        likes: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    console.log(result[0]);
+    expect(result).toEqual([
+      {
+        id: '1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '123-456-7890',
+        likes: [
+          {
+            customer_id: '1',
+            product_id: 1,
+            product: {
+              category: 'Electronics',
+              id: 1,
+              name: 'Product1',
+              price: 19.99,
+              stock: 50,
+            },
+          },
+        ],
+      },
+    ]);
+  });
+
+  test('delete like', async () => {
+    const result = await prismaClient.like.deleteMany({
+      where: { customer_id: '1' },
+    });
+    expect(result.count).toBe(1);
+  });
+
+  test('create implicit relation', async () => {
+    const result = await prismaClient.customer.update({
+      where: {
+        id: '1',
+      },
+      data: {
+        loves: {
+          connect: [{ id: 1 }, { id: 2 }, { id: 3 }],
+        },
+      },
+      include: {
+        loves: true,
+      },
+    });
+
+    console.log(result);
+  });
+
   test.todo('find implicits relation');
 });

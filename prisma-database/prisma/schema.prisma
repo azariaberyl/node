@@ -23,6 +23,7 @@ model Customer {
   wallet  Wallet?
   comment Comment[]
   likes   Like[]
+  loves   Product[] @relation("loves")
 
   @@map("customers")
 }
@@ -47,12 +48,13 @@ model Comment {
 }
 
 model Product {
-  id       Int    @id @default(autoincrement())
+  id       Int        @id @default(autoincrement())
   name     String
   price    Float
   stock    Int
   category String
   likedBy  Like[]
+  loves    Customer[] @relation("loves")
 
   @@map("products") // Optional: Use this if your table name differs from the model name
 }
@@ -60,8 +62,8 @@ model Product {
 model Like {
   customer_id String
   product_id  Int
-  Customer    Customer @relation(fields: [customer_id], references: [id])
-  Product     Product  @relation(fields: [product_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id])
+  product     Product  @relation(fields: [product_id], references: [id])
 
   @@id([customer_id, product_id])
   @@map("likes")
