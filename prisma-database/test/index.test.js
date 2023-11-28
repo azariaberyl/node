@@ -731,7 +731,6 @@ describe.only('Many to many, likes, cumstomer can like many product; can be like
       },
     });
 
-    console.log(result[0]);
     expect(result).toEqual([
       {
         id: '1',
@@ -777,8 +776,81 @@ describe.only('Many to many, likes, cumstomer can like many product; can be like
       },
     });
 
-    console.log(result);
+    expect(result).toEqual({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      phone: '123-456-7890',
+      loves: [
+        {
+          id: 1,
+          name: 'Product1',
+          price: 19.99,
+          stock: 50,
+          category: 'Electronics',
+        },
+        {
+          id: 2,
+          name: 'Product2',
+          price: 29.99,
+          stock: 30,
+          category: 'Clothing',
+        },
+        {
+          id: 3,
+          name: 'Product3',
+          price: 9.99,
+          stock: 100,
+          category: 'Electronics',
+        },
+      ],
+    });
   });
 
-  test.todo('find implicits relation');
+  test('find implicits relation', async () => {
+    const result = await prismaClient.customer.findMany({
+      where: {
+        loves: {
+          some: {
+            name: {
+              contains: 'Product',
+            },
+          },
+        },
+      },
+      include: {
+        loves: true,
+      },
+    });
+
+    expect(result[0]).toEqual({
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      phone: '123-456-7890',
+      loves: [
+        {
+          id: 1,
+          name: 'Product1',
+          price: 19.99,
+          stock: 50,
+          category: 'Electronics',
+        },
+        {
+          id: 2,
+          name: 'Product2',
+          price: 29.99,
+          stock: 30,
+          category: 'Clothing',
+        },
+        {
+          id: 3,
+          name: 'Product3',
+          price: 9.99,
+          stock: 100,
+          category: 'Electronics',
+        },
+      ],
+    });
+  });
 });
