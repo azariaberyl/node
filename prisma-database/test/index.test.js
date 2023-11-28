@@ -247,13 +247,13 @@ describe('CRUD Many', () => {
 test('Pagging', async () => {
   // Skip is the how many data skipped, and take is how many data taken after that skip
   const page1 = await prismaClient.customer.findMany({
-    skip: 0,
-    take: 1,
+    skip: 0, // Skip 0 data -> No skip
+    take: 1, // Take 1 data -> Take the first data
   });
 
   const page2 = await prismaClient.customer.findMany({
-    skip: 1,
-    take: 1,
+    skip: 1, // Skip 1 data -> Skip the first data
+    take: 1, // Take 1 -> Take the second data
   });
 
   expect(page1[0]).toEqual(data1);
@@ -272,6 +272,7 @@ test('Sorting', async () => {
 
 test('Select fields / columns', async () => {
   const result = await prismaClient.customer.findMany({
+    // Will only return id and name fields/columns
     select: {
       id: true,
       name: true,
@@ -400,7 +401,7 @@ test('Where, filter conditions and operators', async () => {
   });
 });
 
-describe('One to one, customer to wallet', () => {
+describe.only('One to one, customer to wallet', () => {
   afterAll(async () => {
     await prismaClient.wallet.delete({
       where: {
@@ -414,7 +415,7 @@ describe('One to one, customer to wallet', () => {
     });
   });
 
-  test('One to one, connect, with include', async () => {
+  test('One to one, Create wallet connect to customer, with include customer', async () => {
     const result = await prismaClient.wallet.create({
       data: {
         id: 1,
@@ -478,12 +479,19 @@ describe('One to one, customer to wallet', () => {
         wallet: true,
       },
     });
-    console.log(result);
+
+    expect(result[0]).toEqual({
+      id: 'john2',
+      name: 'John Wick',
+      email: 'john2@gmail.com',
+      phone: '0858721392183',
+      wallet: { id: 1, balance: 10000, customer_id: 'john2' },
+    });
   });
 });
 
 describe('One to many, customer to comments', () => {
-  test('Create comment, connect with include', async () => {
+  test('Create comment, connect to customer, with include customer', async () => {
     const result = await prismaClient.comment.create({
       data: {
         id: '103',
@@ -644,8 +652,8 @@ describe('One to many, customer to comments', () => {
   });
 });
 
-describe.only('Many to many, likes, cumstomer can like many product; can be liked by many', () => {
-  test('create relation, customer likes product', async () => {
+describe('Many to many, likes, cumstomer can like many product; can be liked by many', () => {
+  test('create like and connect relation, customer likes product', async () => {
     const result = await prismaClient.like.create({
       data: {
         customer_id: '1',

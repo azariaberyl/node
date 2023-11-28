@@ -1,3 +1,20 @@
+-- Create customers table
+CREATE TABLE customers (
+    id VARCHAR(191) NOT NULL PRIMARY KEY,
+    name VARCHAR(191) NOT NULL,
+    email VARCHAR(191) NOT NULL UNIQUE,
+    phone VARCHAR(191) NOT NULL UNIQUE
+);
+
+-- Create wallet table
+CREATE TABLE wallet (
+    id INT NOT NULL PRIMARY KEY,
+    balance DECIMAL(10,2),
+    customer_id VARCHAR(191) UNIQUE,
+		-- Crete a constraint name
+    CONSTRAINT wallet_customer_id_fk FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
 CREATE TABLE comments (
     id varchar(191) NOT NULL,
     customer_id varchar(191) NOT NULL,
